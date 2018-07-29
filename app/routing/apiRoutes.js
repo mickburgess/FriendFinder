@@ -4,7 +4,7 @@
 // This data source hold arrays of information on friends.
 // ===============================================================================
 
-var friendData = require("../data/friends.js");
+var friendData = require("../data/friends");
 
 
 // ===============================================================================
@@ -22,17 +22,33 @@ module.exports = function (app) {
     res.json(friendData);
   });
 
-
-  // API POST Requests
-  // Below code handles when a user submits a form and thus submits data to the server.
-  // In each of the below cases, when a user submits form data (a JSON object)
-  // ...the JSON is pushed to the appropriate JavaScript array
-  // (ex. User fills out a reservation request... this data is then sent to the server...
-  // Then the server saves the data to the tableData array)
-  // ---------------------------------------------------------------------------
-
   app.post("/api/friends", function (req, res) {
     
-    friendData.push(req.body)
+    var surveyInfo = req.body;
+    var totalDiff = 0;
+    // Init match object
+    var match = {
+      "name": "",
+      "photo": "",
+      surveyDiff: 50
+    };
+    
+    for (var i = 0; i < friendData.length; i++) {
+
+      for (var h = 0; h < friendData[i].scores.length; h++) {
+        totalDiff = Math.abs(parseInt(friendData[i].scores[h]) - parseInt(surveyInfo.scores[h]));
+      
+        if (totalDiff <= match.surveyDiff) {
+          match.name = friendData[i].name;
+          match.photo = friendData[i].photo;
+          match.surveyDiff = totalDiff;
+        }
+      }
+      totalDiff = 0;
+    }
+    console.log(surveyInfo);
+    friendData.push(surveyInfo);
+    console.log(match);
+    res.json(match);
   });
 };
